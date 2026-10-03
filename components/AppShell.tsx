@@ -2,7 +2,7 @@
 
 import { isAuthPath } from "@/lib/auth/paths";
 import { initAuth, subscribeAuth } from "@/lib/auth/session";
-import { getProfile, seedLocalCatalog } from "@/lib/actions";
+import { onboardingRouteState, seedLocalCatalog } from "@/lib/actions";
 import { isCloudEnabled } from "@/lib/supabase/client";
 import { useAuth } from "@/store/useAuth";
 import { usePathname, useRouter } from "next/navigation";
@@ -43,27 +43,33 @@ export function AppShell({ children }: { children: ReactNode }) {
       try {
         const inSession = useAuth.getState().signedIn;
         const cloud = isCloudEnabled();
+        const { currentDone, returning } = await onboardingRouteState();
+        if (cancelled) return;
 
-        if (cloud && !inSession) {
+        if (inSession) {
+          if (!currentDone) {
+            if (path !== "/onboarding") router.replace("/onboarding");
+            return;
+          }
+          if (path === "/onboarding" || isAuthPath(path)) router.replace("/");
+          return;
+        }
+
+        if (!returning) {
+          if (path !== "/onboarding") router.replace("/onboarding");
+          return;
+        }
+
+        if (cloud) {
           if (!isAuthPath(path)) router.replace("/login");
           return;
         }
 
-        if (isAuthPath(path)) {
-          if (inSession) {
-            const profile = await getProfile();
-            if (!cancelled) router.replace(profile?.onboardingCompletedAt ? "/" : "/onboarding");
-          }
-          return;
-        }
-
-        const profile = await getProfile();
-        const onboarded = Boolean(profile?.onboardingCompletedAt);
-        if (!onboarded && path !== "/onboarding") router.replace("/onboarding");
-        if (onboarded && path === "/onboarding") router.replace("/");
+        if (currentDone && path === "/onboarding") router.replace("/");
+        else if (!currentDone && !isAuthPath(path)) router.replace("/login");
       } catch {
-        if (!cancelled && !isAuthPath(path) && path !== "/onboarding") {
-          router.replace(isCloudEnabled() ? "/login" : "/onboarding");
+        if (!cancelled && path !== "/onboarding" && !isAuthPath(path)) {
+          router.replace("/onboarding");
         }
       } finally {
         if (!cancelled) setReady(true);

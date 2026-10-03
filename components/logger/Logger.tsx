@@ -2,6 +2,7 @@
 
 import { addMeal, deleteMeal, saveCustomFood, saveRecipe } from "@/lib/actions";
 import { db } from "@/lib/db";
+import { NumberField } from "@/components/ui/NumberField";
 import { Button, Card, Field, Input, Segmented } from "@/components/ui";
 import { useUserId } from "@/store/useAuth";
 import { useUi } from "@/store/useUi";
@@ -9,7 +10,7 @@ import type { MealType } from "@/types";
 import { MEALS } from "@/types";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type Tab = "quick" | "custom" | "recipe";
 
@@ -133,6 +134,8 @@ function QuickForm({
   const [carbs, setCarbs] = useState(40);
   const [fat, setFat] = useState(12);
   const [grams, setGrams] = useState(250);
+  const [formError, setFormError] = useState<string | null>(null);
+  const valid = useRef({ grams: true, calories: true, protein: true, carbs: true, fat: true });
 
   return (
     <Card className="space-y-3">
@@ -141,25 +144,61 @@ function QuickForm({
       </Field>
       <div className="grid grid-cols-2 gap-2">
         <Field label="Grams">
-          <Input type="number" value={grams} onChange={(e) => setGrams(Number(e.target.value))} />
+          <NumberField
+            value={grams}
+            onValueChange={setGrams}
+            onValidityChange={(ok) => {
+              valid.current.grams = ok;
+            }}
+          />
         </Field>
         <Field label="Calories">
-          <Input type="number" value={calories} onChange={(e) => setCalories(Number(e.target.value))} />
+          <NumberField
+            value={calories}
+            onValueChange={setCalories}
+            onValidityChange={(ok) => {
+              valid.current.calories = ok;
+            }}
+          />
         </Field>
         <Field label="Protein">
-          <Input type="number" value={protein} onChange={(e) => setProtein(Number(e.target.value))} />
+          <NumberField
+            value={protein}
+            onValueChange={setProtein}
+            onValidityChange={(ok) => {
+              valid.current.protein = ok;
+            }}
+          />
         </Field>
         <Field label="Carbs">
-          <Input type="number" value={carbs} onChange={(e) => setCarbs(Number(e.target.value))} />
+          <NumberField
+            value={carbs}
+            onValueChange={setCarbs}
+            onValidityChange={(ok) => {
+              valid.current.carbs = ok;
+            }}
+          />
         </Field>
         <Field label="Fats">
-          <Input type="number" value={fat} onChange={(e) => setFat(Number(e.target.value))} />
+          <NumberField
+            value={fat}
+            onValueChange={setFat}
+            onValidityChange={(ok) => {
+              valid.current.fat = ok;
+            }}
+          />
         </Field>
       </div>
+      {formError && <p className="text-xs font-medium text-ff-danger">{formError}</p>}
       <Button
         className="w-full"
         onClick={async () => {
           if (!name.trim()) return;
+          if (!Object.values(valid.current).every(Boolean) || !(grams > 0)) {
+            setFormError("Enter grams and macros before logging.");
+            return;
+          }
+          setFormError(null);
           await addMeal({
             localDate: date,
             mealType: meal,
@@ -211,6 +250,8 @@ function CustomForm({
   const [carbs, setCarbs] = useState(10);
   const [fat, setFat] = useState(8);
   const [grams, setGrams] = useState(100);
+  const [formError, setFormError] = useState<string | null>(null);
+  const valid = useRef({ grams: true, calories: true, protein: true, carbs: true, fat: true });
 
   async function logExisting(id: string) {
     const food = foods.find((f) => f.id === id);
@@ -243,25 +284,61 @@ function CustomForm({
         </Field>
         <div className="grid grid-cols-2 gap-2">
           <Field label="Serving g">
-            <Input type="number" value={grams} onChange={(e) => setGrams(Number(e.target.value))} />
+            <NumberField
+              value={grams}
+              onValueChange={setGrams}
+              onValidityChange={(ok) => {
+                valid.current.grams = ok;
+              }}
+            />
           </Field>
           <Field label="Calories">
-            <Input type="number" value={calories} onChange={(e) => setCalories(Number(e.target.value))} />
+            <NumberField
+              value={calories}
+              onValueChange={setCalories}
+              onValidityChange={(ok) => {
+                valid.current.calories = ok;
+              }}
+            />
           </Field>
           <Field label="P">
-            <Input type="number" value={protein} onChange={(e) => setProtein(Number(e.target.value))} />
+            <NumberField
+              value={protein}
+              onValueChange={setProtein}
+              onValidityChange={(ok) => {
+                valid.current.protein = ok;
+              }}
+            />
           </Field>
           <Field label="C">
-            <Input type="number" value={carbs} onChange={(e) => setCarbs(Number(e.target.value))} />
+            <NumberField
+              value={carbs}
+              onValueChange={setCarbs}
+              onValidityChange={(ok) => {
+                valid.current.carbs = ok;
+              }}
+            />
           </Field>
           <Field label="F">
-            <Input type="number" value={fat} onChange={(e) => setFat(Number(e.target.value))} />
+            <NumberField
+              value={fat}
+              onValueChange={setFat}
+              onValidityChange={(ok) => {
+                valid.current.fat = ok;
+              }}
+            />
           </Field>
         </div>
+        {formError && <p className="text-xs font-medium text-ff-danger">{formError}</p>}
         <Button
           className="w-full"
           onClick={async () => {
             if (!name.trim()) return;
+            if (!Object.values(valid.current).every(Boolean) || !(grams > 0)) {
+              setFormError("Enter serving size and macros before saving.");
+              return;
+            }
+            setFormError(null);
             const id = await saveCustomFood({
               name: name.trim(),
               servingLabel: "1 serving",
@@ -327,6 +404,8 @@ function RecipeForm({
   const [name, setName] = useState("");
   const [servings, setServings] = useState(2);
   const [line, setLine] = useState("Chicken 200g 330kcal 62P 0C 7F");
+  const [formError, setFormError] = useState<string | null>(null);
+  const servingsValid = useRef(true);
 
   async function logRecipe(id: string) {
     const ings = await db.recipeIngredients.where("recipeId").equals(id).toArray();
@@ -357,7 +436,13 @@ function RecipeForm({
           <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Sunday chili" />
         </Field>
         <Field label="Servings">
-          <Input type="number" min={1} value={servings} onChange={(e) => setServings(Number(e.target.value))} />
+          <NumberField
+            value={servings}
+            onValueChange={setServings}
+            onValidityChange={(ok) => {
+              servingsValid.current = ok;
+            }}
+          />
         </Field>
         <Field label="Ingredient line">
           <Input
@@ -366,11 +451,17 @@ function RecipeForm({
             placeholder="Name 150g 200kcal 20P 10C 8F"
           />
         </Field>
+        {formError && <p className="text-xs font-medium text-ff-danger">{formError}</p>}
         <Button
           className="w-full"
           onClick={async () => {
             const parsed = parseIngredientLine(line);
             if (!name.trim() || !parsed) return;
+            if (!servingsValid.current || !(servings > 0)) {
+              setFormError("Enter servings greater than 0.");
+              return;
+            }
+            setFormError(null);
             const id = await saveRecipe(name.trim(), servings, [parsed]);
             await logRecipe(id);
             setName("");

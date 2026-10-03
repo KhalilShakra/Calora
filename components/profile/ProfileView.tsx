@@ -2,21 +2,18 @@
 
 import { BmiCard } from "@/components/bmi/BmiCard";
 import { useActiveGoal } from "@/hooks/useActiveGoal";
-import { resetLocalData, setTheme } from "@/lib/actions";
-import { signOut } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { ACTIVITY_LABEL, GOAL_LABEL } from "@/lib/labels";
 import { isCloudEnabled } from "@/lib/supabase/client";
 import { xpIntoLevel } from "@/lib/level";
-import { Button, Card, Segmented } from "@/components/ui";
+import { Card } from "@/components/ui";
 import { APP_NAME, APP_TAGLINE } from "@/design/brand";
 import { useAuth, useUserId } from "@/store/useAuth";
 import { useLiveQuery } from "dexie-react-hooks";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 export function ProfileView() {
-  const router = useRouter();
   const userId = useUserId();
   const email = useAuth((s) => s.email);
   const signedIn = useAuth((s) => s.signedIn);
@@ -61,11 +58,16 @@ export function ProfileView() {
         <Row label="Cloud sync" value={cloud ? (signedIn ? "On" : "Sign in to sync") : "Offline vault"} />
       </Card>
 
-      {!cloud && (
-        <Card>
-          <p className="text-sm text-ff-dim">Cloud sync off — add Supabase keys</p>
-        </Card>
-      )}
+      <Link
+        href="/settings"
+        className="flex min-h-11 items-center justify-between rounded-ff border border-ff-border bg-ff-surface px-4 py-3"
+      >
+        <span>
+          <span className="block font-semibold">Settings</span>
+          <span className="text-xs text-ff-dim">Account, theme, units, reset</span>
+        </span>
+        <ChevronRight size={18} className="text-ff-dim" />
+      </Link>
 
       <Link
         href="/tips"
@@ -78,44 +80,6 @@ export function ProfileView() {
         <BmiCard weightKg={profile.currentWeightKg} heightCm={profile.heightCm} />
       )}
 
-      <Card className="space-y-3">
-        <p className="font-semibold">Theme</p>
-        <Segmented
-          value={profile?.themeId ?? "dark"}
-          onChange={(theme) => void setTheme(theme)}
-          options={[
-            { value: "dark", label: "Ember" },
-            { value: "light", label: "Daylight" },
-          ]}
-        />
-      </Card>
-
-      {signedIn && (
-        <Button
-          variant="ghost"
-          className="w-full"
-          onClick={async () => {
-            await signOut();
-            router.replace(cloud ? "/login" : "/");
-          }}
-        >
-          Sign out
-        </Button>
-      )}
-
-      <Button
-        variant="danger"
-        className="w-full"
-        onClick={async () => {
-          if (!confirm("Erase local ForgeFuel data on this device? Signed-in cloud data may restore on the next sync.")) {
-            return;
-          }
-          await resetLocalData();
-          router.replace("/onboarding");
-        }}
-      >
-        Reset local data
-      </Button>
     </div>
   );
 }

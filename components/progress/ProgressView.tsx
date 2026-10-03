@@ -4,15 +4,18 @@ import { addWeighIn } from "@/lib/actions";
 import { computeBmi } from "@/lib/bmi";
 import { db } from "@/lib/db";
 import { addDays, todayKey } from "@/lib/dates";
-import { Button, Card, Field, Input } from "@/components/ui";
+import { NumberField } from "@/components/ui/NumberField";
+import { Button, Card, Field } from "@/components/ui";
 import { useUi } from "@/store/useUi";
 import { useUserId } from "@/store/useAuth";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function ProgressView() {
   const showToast = useUi((s) => s.showToast);
   const [weight, setWeight] = useState(78);
+  const [weightError, setWeightError] = useState<string | null>(null);
+  const weightValid = useRef(true);
   const userId = useUserId();
   const profile = useLiveQuery(() => db.profiles.get(userId), [userId]);
   const progress = useLiveQuery(
@@ -91,7 +94,17 @@ export function ProgressView() {
       <Card className="space-y-3">
         <p className="font-semibold">Weekly weigh-in</p>
         <Field label="Weight (kg)">
-          <Input type="number" step="0.1" value={weight} onChange={(e) => setWeight(Number(e.target.value))} />
+          <NumberField
+            value={weight}
+            error={weightError}
+            onValueChange={(next) => {
+              setWeight(next);
+              setWeightError(null);
+            }}
+            onValidityChange={(ok) => {
+              weightValid.current = ok;
+            }}
+          />
         </Field>
         {heightCm > 0 && (
           <p className="text-sm text-ff-dim">
@@ -101,6 +114,14 @@ export function ProgressView() {
         <Button
           className="w-full"
           onClick={async () => {
+            if (!weightValid.current) {
+              setWeightError("Enter a weight");
+              return;
+            }
+            if (!(weight > 0)) {
+              setWeightError("Enter a weight greater than 0");
+              return;
+            }
             await addWeighIn(todayKey(), weight);
             showToast(`Weigh-in saved · BMI ${computeBmi(weight, heightCm)} · +25 XP`);
           }}

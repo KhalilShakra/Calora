@@ -25,6 +25,7 @@ import type {
   StreakKind,
   UnitSystem,
 } from "@/types";
+import { clearOnboardingFinished, markOnboardingFinished, readOnboardingFinished } from "@/lib/onboardingGate";
 import { getUserId } from "@/store/useAuth";
 import { scheduleSync } from "@/lib/sync/cloud";
 
@@ -47,6 +48,19 @@ export async function getProfile(): Promise<Profile | undefined> {
   return db.profiles.get(getUserId());
 }
 
+/** Current account finished onboarding, or this device already has a finished plan (sign-out keeps it). */
+export async function onboardingRouteState(): Promise<{ currentDone: boolean; returning: boolean }> {
+  const profile = await getProfile();
+  const currentDone = Boolean(profile?.onboardingCompletedAt);
+  if (currentDone) {
+    markOnboardingFinished();
+    return { currentDone: true, returning: true };
+  }
+  const other = await db.profiles.filter((row) => Boolean(row.onboardingCompletedAt)).first();
+  if (other) markOnboardingFinished();
+  return { currentDone: false, returning: readOnboardingFinished() || Boolean(other) };
+}
+
 export async function getActiveGoal(): Promise<Goal | undefined> {
   const userId = getUserId();
   return db.goals.filter((g) => g.userId === userId && g.isActive).first();
@@ -65,6 +79,9 @@ export interface OnboardingInput {
 }
 
 export async function completeOnboarding(input: OnboardingInput): Promise<void> {
+  if (!(input.heightCm > 0) || !(input.currentWeightKg > 0) || !(input.targetWeightKg > 0)) {
+    throw new Error("Enter height, weight, and target weight.");
+  }
   await seedLocalCatalog();
   const plan = computeTdeePlan({
     sex: input.sex,
@@ -130,11 +147,19 @@ export async function completeOnboarding(input: OnboardingInput): Promise<void> 
       }
     }
   });
+  markOnboardingFinished();
   scheduleSync();
 }
 
 export async function setTheme(themeId: "dark" | "light"): Promise<void> {
   await db.profiles.update(getUserId(), { themeId, updatedAt: nowIso() });
+  scheduleSync();
+}
+
+export async function updateDisplayName(displayName: string): Promise<void> {
+  const name = displayName.trim();
+  if (!name) return;
+  await db.profiles.update(getUserId(), { displayName: name, updatedAt: nowIso() });
   scheduleSync();
 }
 
@@ -286,6 +311,7 @@ export async function addWater(localDate: string, amountMl: number): Promise<voi
 }
 
 export async function addWeighIn(localDate: string, weightKg: number): Promise<void> {
+  if (!(Number.isFinite(weightKg) && weightKg > 0)) return;
   const userId = getUserId();
   await db.bodyMetrics.add({
     id: newId(),
@@ -361,6 +387,7 @@ export async function saveRecipe(
 }
 
 export async function resetLocalData(): Promise<void> {
+  clearOnboardingFinished();
   await Promise.all([
     db.profiles.clear(),
     db.goals.clear(),

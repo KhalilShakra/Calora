@@ -119,8 +119,14 @@ export function AuthScreen({ mode }: { mode: "login" | "signup" }) {
       </div>
 
       {!cloud && (
-        <Card>
-          <p className="text-sm text-ff-dim">Cloud sync off — add Supabase keys</p>
+        <Card className="space-y-3">
+          <p className="text-sm text-ff-dim">
+            Cloud accounts are off until Supabase keys are added. Register and sign in cannot submit
+            yet. You can keep tracking on this device.
+          </p>
+          <Button variant="ghost" className="w-full" type="button" onClick={() => router.replace("/")}>
+            Continue on this device
+          </Button>
         </Card>
       )}
 

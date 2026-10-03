@@ -21,7 +21,12 @@ export function BottomNav() {
     <nav className="sticky bottom-0 z-40 border-t border-ff-border bg-ff-elevated/95 px-2 pb-[max(0.6rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur">
       <ul className="grid grid-cols-5">
         {ITEMS.map((item) => {
-          const active = item.href === "/" ? path === "/" : path.startsWith(item.href);
+          const active =
+            item.href === "/"
+              ? path === "/"
+              : item.href === "/profile"
+                ? path.startsWith("/profile") || path.startsWith("/settings")
+                : path.startsWith(item.href);
           const Icon = item.icon;
           return (
             <li key={item.href}>
