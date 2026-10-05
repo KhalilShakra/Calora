@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Calora — Track food. Feel better.</title>
+    <meta name="description" content="Track food. Feel better." />
+    <link rel="icon" href="icon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Sora:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="top">
+        <a class="brand" href="#top">
+          <img src="icon.svg" alt="" />
+          Calora
+        </a>
+        <div class="actions">
+          <div class="langs" role="group" aria-label="Language">
+            <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
+            <button type="button" data-set-lang="sv" aria-pressed="false">SV</button>
+          </div>
+          <a class="btn desktop-cta" data-i18n="cta" href="https://forgefuel-gray.vercel.app/onboarding">Get started</a>
+        </div>
+      </header>
+
+      <main id="top">
+        <section class="hero">
+          <div>
+            <p class="kicker" data-i18n="kicker">Daily food tracking</p>
+            <h1 data-i18n="title">Track food. Feel better.</h1>
+            <p class="lead" data-i18n="body">
+              Calories, macros, water, and weight in one calm view. Built for the way you actually eat.
+            </p>
+            <div class="row">
+              <a class="btn" data-i18n="cta" href="https://forgefuel-gray.vercel.app/onboarding">Get started</a>
+              <a class="btn ghost" data-i18n="how" href="#how">See how it works</a>
+            </div>
+          </div>
+          <div class="phone" aria-hidden="true">
+            <div class="device">
+              <div class="screen">
+                <div class="screen-head">
+                  <div>
+                    <p class="muted">Calora</p>
+                    <strong data-i18n="today">Today</strong>
+                  </div>
+                  <img src="icon.svg" alt="" width="36" height="36" />
+                </div>
+                <div class="ring">
+                  <span>
+                    <b>1 248</b>
+                    <small class="muted" data-i18n="left">left</small>
+                  </span>
+                </div>
+                <div class="macros">
+                  <div>
+                    <div class="dot" style="background: conic-gradient(var(--pro) 60%, #243028 0)"></div>
+                    <p>92 g</p>
+                    <small data-i18n="protein">Protein</small>
+                  </div>
+                  <div>
+                    <div class="dot" style="background: conic-gradient(var(--carb) 60%, #243028 0)"></div>
+                    <p>140 g</p>
+                    <small data-i18n="carbs">Carbs</small>
+                  </div>
+                  <div>
+                    <div class="dot" style="background: conic-gradient(var(--fat) 60%, #243028 0)"></div>
+                    <p>48 g</p>
+                    <small data-i18n="fat">Fat</small>
+                  </div>
+                </div>
+                <div class="water">
+                  <span data-i18n="water">Water</span>
+                  <small>750/2500 ml</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 data-i18n="featTitle">Everything for the day</h2>
+          <p class="sub" data-i18n="featBody">A few tools, easy to use every day.</p>
+          <div class="grid">
+            <article>
+              <div class="mark" style="background: rgba(198, 245, 49, 0.18)">＋</div>
+              <h3 data-i18n="logTitle">Log a meal</h3>
+              <p data-i18n="logBody">Search what you ate, or save a recipe and add it in one tap.</p>
+            </article>
+            <article>
+              <div class="mark" style="background: rgba(142, 182, 255, 0.18)">▦</div>
+              <h3 data-i18n="scanTitle">Scan a product</h3>
+              <p data-i18n="scanBody">Look up a barcode and add it to breakfast, lunch, dinner, or a snack.</p>
+            </article>
+            <article>
+              <div class="mark" style="background: rgba(240, 193, 74, 0.18)">◎</div>
+              <h3 data-i18n="ringTitle">Calories and macros</h3>
+              <p data-i18n="ringBody">See what is left for protein, carbs, and fat without a crowded screen.</p>
+            </article>
+            <article>
+              <div class="mark" style="background: rgba(126, 200, 255, 0.18)">◌</div>
+              <h3 data-i18n="waterTitle">Water you can undo</h3>
+              <p data-i18n="waterBody">Add a glass, or take it back if you tapped the wrong way.</p>
+            </article>
+            <article>
+              <div class="mark" style="background: rgba(139, 124, 246, 0.18)">▹</div>
+              <h3 data-i18n="bmiTitle">A clear BMI</h3>
+              <p data-i18n="bmiBody">Your number, a simple range, and a target that follows your plan.</p>
+            </article>
+            <article>
+              <div class="mark" style="background: rgba(245, 185, 66, 0.18)">★</div>
+              <h3 data-i18n="progressTitle">Progress you can see</h3>
+              <p data-i18n="progressBody">Weight, streaks, and levels from bronze to gold.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" id="how">
+          <h2 data-i18n="stepsTitle">Ready in a few minutes</h2>
+          <ol class="steps">
+            <li class="step">
+              <b>01</b>
+              <h3 data-i18n="s1">Set the goal</h3>
+              <p data-i18n="s1b">Cut, bulk, maintain, or recomp. A few questions set the plan.</p>
+            </li>
+            <li class="step">
+              <b>02</b>
+              <h3 data-i18n="s2">Log the day</h3>
+              <p data-i18n="s2b">Meals, scans, and water stay on this device.</p>
+            </li>
+            <li class="step">
+              <b>03</b>
+              <h3 data-i18n="s3">Watch it move</h3>
+              <p data-i18n="s3b">Rings, BMI, and streaks show what changed.</p>
+            </li>
+          </ol>
+        </section>
+
+        <section class="close">
+          <p class="kicker">Calora</p>
+          <h2 data-i18n="closeTitle">Ready when you are</h2>
+          <p data-i18n="closeBody">No account needed to start on this device.</p>
+          <a class="btn" data-i18n="cta" href="https://forgefuel-gray.vercel.app/onboarding">Get started</a>
+        </section>
+      </main>
+
+      <footer>
+        <strong>Calora</strong>
+        <span data-i18n="title">Track food. Feel better.</span>
+      </footer>
+    </div>
+    <script>
+      const copy = {
+        en: {
+          kicker: "Daily food tracking",
+          title: "Track food. Feel better.",
+          body: "Calories, macros, water, and weight in one calm view. Built for the way you actually eat.",
+          cta: "Get started",
+          how: "See how it works",
+          today: "Today",
+          left: "left",
+          protein: "Protein",
+          carbs: "Carbs",
+          fat: "Fat",
+          water: "Water",
+          featTitle: "Everything for the day",
+          featBody: "A few tools, easy to use every day.",
+          logTitle: "Log a meal",
+          logBody: "Search what you ate, or save a recipe and add it in one tap.",
+          scanTitle: "Scan a product",
+          scanBody: "Look up a barcode and add it to breakfast, lunch, dinner, or a snack.",
+          ringTitle: "Calories and macros",
+          ringBody: "See what is left for protein, carbs, and fat without a crowded screen.",
+          waterTitle: "Water you can undo",
+          waterBody: "Add a glass, or take it back if you tapped the wrong way.",
+          bmiTitle: "A clear BMI",
+          bmiBody: "Your number, a simple range, and a target that follows your plan.",
+          progressTitle: "Progress you can see",
+          progressBody: "Weight, streaks, and levels from bronze to gold.",
+          stepsTitle: "Ready in a few minutes",
+          s1: "Set the goal",
+          s1b: "Cut, bulk, maintain, or recomp. A few questions set the plan.",
+          s2: "Log the day",
+          s2b: "Meals, scans, and water stay on this device.",
+          s3: "Watch it move",
+          s3b: "Rings, BMI, and streaks show what changed.",
+          closeTitle: "Ready when you are",
+          closeBody: "No account needed to start on this device.",
+        },
+        sv: {
+          kicker: "Matdagbok för varje dag",
+          title: "Följ maten. Må bättre.",
+          body: "Kalorier, makron, vatten och vikt i en lugn översikt. Byggd för hur du faktiskt äter.",
+          cta: "Kom igång",
+          how: "Se hur det funkar",
+          today: "Idag",
+          left: "kvar",
+          protein: "Protein",
+          carbs: "Kolhydrater",
+          fat: "Fett",
+          water: "Vatten",
+          featTitle: "Allt för dagen",
+          featBody: "Få verktyg, lätta att använda varje dag.",
+          logTitle: "Logga en måltid",
+          logBody: "Sök det du åt, eller spara ett recept och lägg till det med ett tryck.",
+          scanTitle: "Skanna en vara",
+          scanBody: "Slå upp en streckkod och lägg den på frukost, lunch, middag eller mellanmål.",
+          ringTitle: "Kalorier och makron",
+          ringBody: "Se vad som är kvar av protein, kolhydrater och fett utan en rörig skärm.",
+          waterTitle: "Vatten du kan ångra",
+          waterBody: "Lägg till ett glas, eller ta bort det om du tryckte fel.",
+          bmiTitle: "Ett tydligt BMI",
+          bmiBody: "Ditt tal, ett enkelt spann och ett mål som följer din plan.",
+          progressTitle: "Framsteg som syns",
+          progressBody: "Vikt, sviter och nivåer från brons till guld.",
+          stepsTitle: "Igång på några minuter",
+          s1: "Sätt målet",
+          s1b: "Deff, bulk, behålla eller rekomp. Några frågor sätter planen.",
+          s2: "Logga dagen",
+          s2b: "Måltider, skanning och vatten stannar på den här enheten.",
+          s3: "Se vad som rör sig",
+          s3b: "Ringar, BMI och sviter visar vad som ändrats.",
+          closeTitle: "Redo när du är",
+          closeBody: "Inget konto behövs för att börja på den här enheten.",
+        },
+      };
+
+      function apply(lang) {
+        const text = copy[lang] || copy.en;
+        document.documentElement.lang = lang;
+        document.title = "Calora — " + text.title;
+        document.querySelectorAll("[data-i18n]").forEach((node) => {
+          const key = node.getAttribute("data-i18n");
+          if (text[key]) node.textContent = text[key];
+        });
+        document.querySelectorAll("[data-set-lang]").forEach((button) => {
+          button.setAttribute("aria-pressed", button.getAttribute("data-set-lang") === lang ? "true" : "false");
+        });
+        try {
+          localStorage.setItem("calora-site-lang", lang);
+        } catch (err) {
+          /* private mode */
+        }
+      }
+
+      document.querySelectorAll("[data-set-lang]").forEach((button) => {
+        button.addEventListener("click", () => apply(button.getAttribute("data-set-lang")));
+      });
+
+      let start = "en";
+      try {
+        if (localStorage.getItem("calora-site-lang") === "sv") start = "sv";
+      } catch (err) {
+        /* keep English */
+      }
+      apply(start);
+    </script>
+  </body>
+</html>
