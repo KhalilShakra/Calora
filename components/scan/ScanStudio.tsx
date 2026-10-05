@@ -2,6 +2,7 @@
 
 import { addMeal } from "@/lib/actions";
 import { Button, Card, Field, Segmented, Select } from "@/components/ui";
+import { MEAL_KEY, useT } from "@/lib/i18n";
 import { useUi } from "@/store/useUi";
 import type { FoodVisionItem, FoodVisionResult, MealType } from "@/types";
 import { MEALS } from "@/types";
@@ -16,13 +17,20 @@ export function ScanStudio() {
   const meal = useUi((s) => s.selectedMeal);
   const setMeal = useUi((s) => s.setMeal);
   const showToast = useUi((s) => s.showToast);
+  const tr = useT();
   const [mode, setMode] = useState<Mode>("photo");
   const [preview, setPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<FoodVisionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [barcodeProduct, setBarcodeProduct] = useState<BarcodeProduct | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const libraryRef = useRef<HTMLInputElement>(null);
+  const confirmRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (result) confirmRef.current?.querySelector("button")?.focus();
+  }, [result]);
 
   async function analyze(dataUrl: string) {
     setBusy(true);
@@ -35,11 +43,11 @@ export function ScanStudio() {
         body: JSON.stringify({ imageBase64: dataUrl }),
       });
       const json = (await res.json()) as { result?: FoodVisionResult; error?: string; demo?: boolean };
-      if (!res.ok || !json.result) throw new Error(json.error || "Analyze failed");
+      if (!res.ok || !json.result) throw new Error(json.error || tr("scan.analyzeFailed"));
       setResult(json.result);
-      if (json.demo) showToast("Demo estimate — add an API key for live vision");
+      if (json.demo) showToast(tr("scan.demo"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Analyze failed");
+      setError(err instanceof Error ? err.message : tr("scan.analyzeFailed"));
     } finally {
       setBusy(false);
     }
@@ -55,12 +63,12 @@ export function ScanStudio() {
     if (!result) return;
     await addMeal({
       localDate: date,
-      mealType: meal,
+      mealType: useUi.getState().selectedMeal,
       source: "ai_vision",
       photoDataUrl: preview ?? undefined,
       items: result.items.map(toLogItem),
     });
-    showToast("Plate logged · +10 XP");
+    showToast(tr("scan.plateLogged"));
     setResult(null);
     setPreview(null);
   }
@@ -69,7 +77,7 @@ export function ScanStudio() {
     if (!barcodeProduct) return;
     await addMeal({
       localDate: date,
-      mealType: meal,
+      mealType: useUi.getState().selectedMeal,
       source: "barcode",
       items: [
         {
@@ -83,31 +91,31 @@ export function ScanStudio() {
         },
       ],
     });
-    showToast("Barcode logged · +10 XP");
+    showToast(tr("scan.barcodeLogged"));
     setBarcodeProduct(null);
   }
 
   return (
     <div className="space-y-4">
       <header>
-        <h1 className="font-display text-2xl font-semibold">Scan</h1>
-        <p className="text-sm text-ff-dim">Photo vision or Open Food Facts barcode.</p>
+        <h1 className="font-display text-2xl font-semibold">{tr("scan.title")}</h1>
+        <p className="text-sm text-ff-dim">{tr("scan.subtitle")}</p>
       </header>
 
       <Segmented
         value={mode}
         onChange={setMode}
         options={[
-          { value: "photo", label: "AI plate" },
-          { value: "barcode", label: "Barcode" },
+          { value: "photo", label: tr("scan.photo") },
+          { value: "barcode", label: tr("scan.barcode") },
         ]}
       />
 
-      <Field label="Log as">
+      <Field label={tr("scan.logAs")}>
         <Select value={meal} onChange={(e) => setMeal(e.target.value as MealType)}>
           {MEALS.map((m) => (
             <option key={m} value={m}>
-              {m}
+              {tr(MEAL_KEY[m])}
             </option>
           ))}
         </Select>
@@ -118,42 +126,57 @@ export function ScanStudio() {
           <div className="overflow-hidden rounded-sheet border border-ff-border bg-ff-muted">
             {preview ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={preview} alt="Meal preview" className="h-56 w-full object-cover" />
+              <img src={preview} alt={tr("scan.previewAlt")} className="h-56 w-full object-cover" />
             ) : (
               <div className="grid h-56 place-items-center text-ff-dim">
                 <div className="text-center">
                   <Camera className="mx-auto mb-2" />
-                  <p className="text-sm">Point at the plate or upload a photo</p>
+                  <p className="text-sm">{tr("scan.point")}</p>
                 </div>
               </div>
             )}
           </div>
           <input
-            ref={fileRef}
+            ref={cameraRef}
             type="file"
             accept="image/*"
             capture="environment"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
+              e.target.value = "";
+              if (file) void onFile(file);
+            }}
+          />
+          <input
+            ref={libraryRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
               if (file) void onFile(file);
             }}
           />
           <div className="grid grid-cols-2 gap-2">
-            <Button onClick={() => fileRef.current?.click()}>
-              <Camera size={16} /> Camera
+            <Button type="button" onClick={() => cameraRef.current?.click()}>
+              <Camera size={16} /> {tr("scan.camera")}
             </Button>
-            <Button variant="soft" onClick={() => fileRef.current?.click()}>
-              <ImagePlus size={16} /> Library
+            <Button type="button" variant="soft" onClick={() => libraryRef.current?.click()}>
+              <ImagePlus size={16} /> {tr("scan.library")}
             </Button>
           </div>
-          {busy && <p className="text-center text-sm text-ff-dim">Reading the plate…</p>}
+          {busy && <p className="text-center text-sm text-ff-dim">{tr("scan.reading")}</p>}
           {error && <p className="text-sm text-ff-danger">{error}</p>}
           {result && (
             <Card className="space-y-3">
               <p className="font-semibold">{result.meal_summary}</p>
               <p className="text-xs text-ff-dim">
-                Confidence {Math.round(result.confidence * 100)}% · {Math.round(result.totals.calories)} kcal
+                {tr("scan.confidence", {
+                  pct: Math.round(result.confidence * 100),
+                  kcal: Math.round(result.totals.calories),
+                })}
               </p>
               <ul className="space-y-2 text-sm">
                 {result.items.map((item) => (
@@ -173,15 +196,25 @@ export function ScanStudio() {
                   ))}
                 </ul>
               )}
-              <Button className="w-full" onClick={confirmVision}>
-                Confirm log
-              </Button>
+              <div ref={confirmRef}>
+                <Button className="w-full" type="button" onClick={confirmVision}>
+                  {tr("scan.addTo", { meal: tr(MEAL_KEY[meal]) })}
+                </Button>
+              </div>
             </Card>
           )}
         </>
       ) : (
         <BarcodePane
           product={barcodeProduct}
+          notFoundLabel={tr("scan.notFound")}
+          cameraOffLabel={tr("scan.cameraOff")}
+          scanningLabel={tr("scan.scanning")}
+          openCameraLabel={tr("scan.openCamera")}
+          typeBarcodeLabel={tr("scan.typeBarcode")}
+          barcodePh={tr("scan.barcodePh")}
+          lookupLabel={tr("scan.lookup")}
+          addToLabel={tr("scan.addTo", { meal: tr(MEAL_KEY[meal]) })}
           onProduct={setBarcodeProduct}
           onConfirm={confirmBarcode}
         />
@@ -216,10 +249,26 @@ interface BarcodeProduct {
 
 function BarcodePane({
   product,
+  notFoundLabel,
+  cameraOffLabel,
+  scanningLabel,
+  openCameraLabel,
+  typeBarcodeLabel,
+  barcodePh,
+  lookupLabel,
+  addToLabel,
   onProduct,
   onConfirm,
 }: {
   product: BarcodeProduct | null;
+  notFoundLabel: string;
+  cameraOffLabel: string;
+  scanningLabel: string;
+  openCameraLabel: string;
+  typeBarcodeLabel: string;
+  barcodePh: string;
+  lookupLabel: string;
+  addToLabel: string;
   onProduct: (p: BarcodeProduct | null) => void;
   onConfirm: () => void;
 }) {
@@ -228,6 +277,7 @@ function BarcodePane({
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const addRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     return () => {
@@ -235,12 +285,16 @@ function BarcodePane({
     };
   }, []);
 
+  useEffect(() => {
+    if (product) addRef.current?.querySelector("button")?.focus();
+  }, [product]);
+
   async function lookup(code: string) {
     setError(null);
     const res = await fetch(`/api/barcode?code=${encodeURIComponent(code)}`);
     const json = (await res.json()) as { product?: BarcodeProduct; error?: string };
     if (!res.ok || !json.product) {
-      setError(json.error || "Product not found");
+      setError(json.error || notFoundLabel);
       onProduct(null);
       return;
     }
@@ -265,27 +319,36 @@ function BarcodePane({
       );
     } catch {
       setScanning(false);
-      setError("Camera unavailable. Type the barcode instead.");
+      setError(cameraOffLabel);
     }
   }
 
   return (
     <div className="space-y-3">
       <div id={hostId} className="overflow-hidden rounded-sheet bg-black" />
-      <Button className="w-full" onClick={startScan} disabled={scanning}>
-        <ScanBarcode size={16} /> {scanning ? "Scanning…" : "Open camera"}
+      <Button type="button" className="w-full" onClick={startScan} disabled={scanning}>
+        <ScanBarcode size={16} /> {scanning ? scanningLabel : openCameraLabel}
       </Button>
-      <Field label="Or type a barcode">
-        <input
-          className="w-full rounded-ff border border-ff-border bg-ff-muted px-3 py-2.5"
-          value={manual}
-          onChange={(e) => setManual(e.target.value)}
-          placeholder="e.g. 3017620422003"
-        />
-      </Field>
-      <Button variant="soft" className="w-full" onClick={() => lookup(manual)} disabled={!manual.trim()}>
-        Look up Open Food Facts
-      </Button>
+      <form
+        className="space-y-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (manual.trim()) void lookup(manual.trim());
+        }}
+      >
+        <Field label={typeBarcodeLabel}>
+          <input
+            className="w-full rounded-ff border border-ff-border bg-ff-muted px-3 py-2.5"
+            value={manual}
+            onChange={(e) => setManual(e.target.value)}
+            placeholder={barcodePh}
+            inputMode="numeric"
+          />
+        </Field>
+        <Button variant="soft" className="w-full" type="submit" disabled={!manual.trim()}>
+          {lookupLabel}
+        </Button>
+      </form>
       {error && <p className="text-sm text-ff-danger">{error}</p>}
       {product && (
         <Card className="space-y-2">
@@ -294,9 +357,11 @@ function BarcodePane({
             {product.servingG}g · {Math.round(product.calories)} kcal · P{Math.round(product.proteinG)} C
             {Math.round(product.carbsG)} F{Math.round(product.fatG)}
           </p>
-          <Button className="w-full" onClick={onConfirm}>
-            Log serving
-          </Button>
+          <div ref={addRef}>
+            <Button className="w-full" type="button" onClick={onConfirm}>
+              {addToLabel}
+            </Button>
+          </div>
         </Card>
       )}
     </div>

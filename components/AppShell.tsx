@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_NAME } from "@/design/brand";
 import { isAuthPath } from "@/lib/auth/paths";
 import { initAuth, subscribeAuth } from "@/lib/auth/session";
 import { onboardingRouteState, seedLocalCatalog } from "@/lib/actions";
@@ -83,14 +84,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (!ready) {
     return (
       <div className="grid min-h-dvh place-items-center text-ff-dim">
-        <p className="font-display text-lg tracking-wide">ForgeFuel</p>
+        <p className="font-display text-lg tracking-wide">{APP_NAME}</p>
       </div>
     );
   }
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <main className="flex-1 px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))]">{children}</main>
+      <main className="flex-1 px-4 pb-28 pt-[max(1rem,env(safe-area-inset-top))]">{children}</main>
       <BottomNav />
       <Toast />
     </div>

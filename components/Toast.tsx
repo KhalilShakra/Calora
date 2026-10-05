@@ -13,7 +13,7 @@ export function Toast() {
   }, [toast, clear]);
   if (!toast) return null;
   return (
-    <div className="pointer-events-none fixed bottom-24 left-1/2 z-50 w-[min(92%,28rem)] -translate-x-1/2 rounded-full bg-ff-primary px-4 py-2 text-center text-sm font-semibold text-slate-950 shadow-glow">
+    <div className="pointer-events-none fixed bottom-24 left-1/2 z-50 w-[min(92%,28rem)] -translate-x-1/2 rounded-full bg-ff-primary px-4 py-2 text-center text-sm font-semibold text-[var(--ff-on-primary)] shadow-glow">
       {toast}
     </div>
   );

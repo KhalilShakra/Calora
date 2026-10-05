@@ -16,6 +16,31 @@ const GOAL_ADJ: Record<GoalType, number> = {
   recomp: -150,
 };
 
+/** Steady matches the original cut / bulk / recomp adjustments. */
+const PACE_SCALE = {
+  gentle: 0.6,
+  steady: 1,
+  fast: 1.4,
+} as const;
+
+const BASE_WEEKLY_KG: Record<GoalType, number> = {
+  lose: 0.5,
+  gain: 0.3,
+  maintain: 0,
+  recomp: 0,
+};
+
+export type Pace = keyof typeof PACE_SCALE;
+export type MacroFocus = "protein" | "simple";
+
+export function weeklyRateKgFor(goalType: GoalType, pace: Pace = "steady"): number {
+  return Math.round(BASE_WEEKLY_KG[goalType] * PACE_SCALE[pace] * 100) / 100;
+}
+
+function calorieAdjustment(goalType: GoalType, pace: Pace): number {
+  return Math.round(GOAL_ADJ[goalType] * PACE_SCALE[pace]);
+}
+
 export interface TdeeInput {
   sex: Sex;
   weightKg: number;
@@ -23,6 +48,10 @@ export interface TdeeInput {
   dateOfBirth: string;
   activityLevel: ActivityLevel;
   goalType: GoalType;
+  /** Omitted pace stays on the original deficit and surplus. */
+  pace?: Pace;
+  /** Omitted focus keeps the original protein-per-kilo rates. */
+  macroFocus?: MacroFocus;
 }
 
 export interface TdeePlan {
@@ -42,14 +71,23 @@ export function computeTdeePlan(input: TdeeInput): TdeePlan {
   bmr += input.sex === "female" ? -161 : 5;
 
   const tdee = bmr * ACTIVITY_MULT[input.activityLevel];
-  const calorieTarget = Math.max(1200, Math.round(tdee + GOAL_ADJ[input.goalType]));
+  const calorieTarget = Math.max(
+    1200,
+    Math.round(tdee + calorieAdjustment(input.goalType, input.pace ?? "steady")),
+  );
 
-  const proteinPerKg =
+  const baseProteinPerKg =
     input.goalType === "lose" || input.goalType === "recomp"
       ? 2.2
       : input.goalType === "gain"
         ? 2.0
         : 1.8;
+  const proteinPerKg =
+    input.macroFocus === "protein"
+      ? baseProteinPerKg + 0.3
+      : input.macroFocus === "simple"
+        ? Math.max(1.4, baseProteinPerKg - 0.4)
+        : baseProteinPerKg;
   const proteinG = Math.round(proteinPerKg * input.weightKg);
   const fatG = Math.round(Math.max(0.7 * input.weightKg, calorieTarget * 0.25 / 9));
   const carbCalories = Math.max(0, calorieTarget - proteinG * 4 - fatG * 9);

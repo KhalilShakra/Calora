@@ -1,5 +1,6 @@
 import { ACHIEVEMENT_SEED } from "@/lib/achievements";
 import { getUserId, useAuth } from "@/store/useAuth";
+import { t } from "@/lib/i18n";
 import { useUi } from "@/store/useUi";
 import { db } from "@/lib/db";
 import { getSupabase, isCloudEnabled } from "@/lib/supabase/client";
@@ -690,7 +691,7 @@ export function scheduleSync(): void {
       const now = Date.now();
       if (now - lastFailToast > 30_000) {
         lastFailToast = now;
-        useUi.getState().showToast("Saved on this device · cloud will retry");
+        useUi.getState().showToast(t("toast.cloudRetry"));
       }
     });
   }, 450);

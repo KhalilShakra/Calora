@@ -2,6 +2,7 @@
 
 import { RemainingChips, TipCard, TipsDisclaimer } from "@/components/tips/TipCard";
 import { useActiveGoal } from "@/hooks/useActiveGoal";
+import { useT } from "@/lib/i18n";
 import { db } from "@/lib/db";
 import { pickTips } from "@/lib/tips";
 import { useUi } from "@/store/useUi";
@@ -56,13 +57,14 @@ export function TipsFeed({ limit }: { limit?: number }) {
     });
   }, [profile, goal, date, items, waters, logs, streak]);
 
+  const t = useT();
   const shown = limit ? tips.slice(0, limit) : tips;
   const proteinLeft = (goal?.proteinG ?? 0) - (items?.reduce((s, i) => s + i.proteinG, 0) ?? 0);
   const kcalLeft = (goal?.calorieTarget ?? 0) - (items?.reduce((s, i) => s + i.calories, 0) ?? 0);
   const waterLeft = (goal?.waterMlTarget ?? 0) - (waters?.reduce((s, w) => s + w.amountMl, 0) ?? 0);
 
   if (!profile || !goal) {
-    return <p className="text-sm text-ff-dim">Your coach unlocks after onboarding.</p>;
+    return <p className="text-sm text-ff-dim">{t("tip.locked")}</p>;
   }
 
   return (

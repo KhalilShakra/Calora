@@ -1,29 +1,31 @@
 "use client";
 
 import { BmiCard } from "@/components/bmi/BmiCard";
-import { RemainingChips, TipCard } from "@/components/tips/TipCard";
+import { APP_NAME } from "@/design/brand";
 import { useActiveGoal } from "@/hooks/useActiveGoal";
 import { addWater } from "@/lib/actions";
 import { db } from "@/lib/db";
-import { addDays, formatHumanDate, todayKey } from "@/lib/dates";
-import { greetingForHour, MEAL_LABEL, suggestedMeal } from "@/lib/labels";
-import { xpIntoLevel } from "@/lib/level";
+import { addDays, todayKey } from "@/lib/dates";
+import { greetingKey, intlLocale, MEAL_KEY, tipCategoryLabel, useT } from "@/lib/i18n";
+import { suggestedMeal } from "@/lib/labels";
 import { pickTips } from "@/lib/tips";
+import { useLang } from "@/store/useLang";
 import { Card } from "@/components/ui";
 import { CalorieRing } from "@/components/dashboard/CalorieRing";
-import { MacroBar } from "@/components/dashboard/MacroBar";
 import { useUi } from "@/store/useUi";
 import { useUserId } from "@/store/useAuth";
 import { MEALS, type MealType } from "@/types";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ChevronLeft, ChevronRight, Droplets, Flame, Sparkles } from "lucide-react";
+import { Droplets, Plus } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, type ReactNode } from "react";
+import { useEffect, useMemo } from "react";
 
 export function Dashboard() {
   const date = useUi((s) => s.selectedDate);
   const setDate = useUi((s) => s.setDate);
   const setMeal = useUi((s) => s.setMeal);
+  const t = useT();
+  const lang = useLang((s) => s.lang);
   const today = todayKey();
   const userId = useUserId();
   const profile = useLiveQuery(() => db.profiles.get(userId), [userId]);
@@ -61,9 +63,9 @@ export function Dashboard() {
   const carbs = flatItems.reduce((s, i) => s + i.carbsG, 0);
   const fats = flatItems.reduce((s, i) => s + i.fatG, 0);
   const water = waters?.reduce((s, w) => s + w.amountMl, 0) ?? 0;
-  const xp = profile ? xpIntoLevel(profile.xpTotal) : { current: 0, needed: 500, ratio: 0 };
   const target = goal?.calorieTarget;
   const nextMeal = suggestedMeal();
+  const week = weekContaining(date);
 
   const heroTip = useMemo(() => {
     if (!profile || !goal) return null;
@@ -90,179 +92,193 @@ export function Dashboard() {
   }, [profile, goal, date, calories, protein, carbs, fats, water, logs, streak]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <header className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-ff-dim">{greetingForHour()}</p>
-          <h1 className="font-display text-2xl font-semibold">{profile?.displayName ?? "Forger"}</h1>
+          <p className="text-sm text-ff-dim">{formatDay(date, lang)}</p>
+          <h1 className="font-display text-[1.65rem] font-semibold leading-tight">
+            {t(greetingKey())}
+            {profile?.displayName ? `, ${profile.displayName}` : ""}
+          </h1>
+          <p className="mt-1 text-xs text-ff-dim">
+            {streak?.currentCount ? t("dash.streak", { n: streak.currentCount }) : t("dash.streakStart")}
+          </p>
         </div>
-        <div className="rounded-full border border-ff-border bg-ff-surface px-3 py-1 text-right">
-          <p className="text-[11px] uppercase text-ff-dim">{profile?.tier}</p>
-          <p className="text-sm font-semibold">Lv {profile?.level ?? 1}</p>
-        </div>
+        <img src="/icon.svg" alt={APP_NAME} className="h-10 w-10 shrink-0" />
       </header>
 
-      <div className="flex items-center justify-between">
-        <button type="button" onClick={() => setDate(addDays(date, -1))} aria-label="Previous day">
-          <ChevronLeft />
-        </button>
-        <button
-          type="button"
-          onClick={() => setDate(today)}
-          className="text-sm font-medium"
-        >
-          {date === today ? formatHumanDate(date) : `${formatHumanDate(date)} · jump to today`}
-        </button>
-        <button
-          type="button"
-          onClick={() => setDate(addDays(date, 1))}
-          aria-label="Next day"
-          disabled={date >= today}
-          className="disabled:opacity-30"
-        >
-          <ChevronRight />
-        </button>
-      </div>
-
-      <Card className="text-center">
-        {target == null ? (
-          <p className="py-10 text-sm text-ff-dim">Loading your targets…</p>
-        ) : (
-          <CalorieRing eaten={calories} target={target} />
-        )}
-        <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-          <Mini stat={`${streak?.currentCount ?? 0}d`} label="Streak" icon={<Flame size={14} className="text-ff-streak" />} />
-          <Mini stat={`${profile?.pointsBalance ?? 0}`} label="Points" icon={<Sparkles size={14} className="text-ff-xp" />} />
-          <Mini stat={`${logs?.length ?? 0}`} label="Logs" icon={<Flame size={14} className="text-ff-primary" />} />
-        </div>
-        <div className="mt-4">
-          <div className="mb-1 flex justify-between text-xs text-ff-dim">
-            <span>XP {xp.current}/{xp.needed}</span>
-            <span>{profile?.xpTotal ?? 0} total</span>
-          </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-ff-muted">
-            <div className="h-full bg-ff-xp" style={{ width: `${xp.ratio * 100}%` }} />
-          </div>
-        </div>
-      </Card>
-
-      {goal && (
-        <RemainingChips
-          proteinLeft={Math.round(goal.proteinG - protein)}
-          kcalLeft={Math.round(goal.calorieTarget - calories)}
-          waterLeft={goal.waterMlTarget - water}
-        />
-      )}
-
-      {heroTip && <TipCard tip={heroTip} featured />}
-      <Link href="/tips" className="block text-center text-sm font-semibold text-ff-primary">
-        More coach tips
-      </Link>
-
-      {profile && <BmiCard weightKg={profile.currentWeightKg} heightCm={profile.heightCm} compact />}
-
-      <Card className="space-y-3">
-        <MacroBar label="Protein" actual={protein} target={goal?.proteinG ?? 0} color="var(--ff-pro)" />
-        <MacroBar label="Carbs" actual={carbs} target={goal?.carbsG ?? 0} color="var(--ff-carb)" />
-        <MacroBar label="Fats" actual={fats} target={goal?.fatG ?? 0} color="var(--ff-fat)" />
-      </Card>
-
-      <Card>
-        <div className="mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-2 font-semibold">
-            <Droplets size={18} className="text-ff-water" />
-            Water
-          </div>
-          <span className="text-sm text-ff-dim">
-            {water} / {goal?.waterMlTarget ?? 0} ml
-          </span>
-        </div>
-        <div className="flex gap-2">
-          {[250, 500].map((ml) => (
-            <button
-              key={ml}
-              type="button"
-              onClick={() => addWater(date, ml)}
-              className="flex-1 rounded-full bg-ff-muted py-2 text-sm font-semibold text-ff-water"
-            >
-              +{ml} ml
-            </button>
-          ))}
-        </div>
-      </Card>
-
-      <div className="space-y-3">
-        {MEALS.map((meal) => {
-          const group = items?.filter((g) => g.log.mealType === meal) ?? [];
-          const kcal = group.reduce((s, g) => s + g.items.reduce((a, i) => a + i.calories, 0), 0);
-          const isNext = meal === nextMeal && date === today;
+      <div className="grid grid-cols-7 gap-1">
+        {week.map((day) => {
+          const parts = dayParts(day, lang);
+          const selected = day === date;
+          const future = day > today;
           return (
-            <Card key={meal} className={isNext && group.length === 0 ? "border-ff-primary/40" : undefined}>
-              <div className="mb-2 flex items-center justify-between">
-                <h2 className="font-display">
-                  {MEAL_LABEL[meal]}
-                  {isNext && <span className="ml-2 text-xs font-medium text-ff-primary">now</span>}
-                </h2>
-                <span className="text-sm text-ff-dim">{Math.round(kcal)} kcal</span>
-              </div>
-              {group.length === 0 ? (
-                <Link
-                  href="/log"
-                  onClick={() => setMeal(meal)}
-                  className="text-sm font-medium text-ff-primary"
-                >
-                  Add {MEAL_LABEL[meal].toLowerCase()}
-                </Link>
-              ) : (
-                <ul className="space-y-1 text-sm">
-                  {group.flatMap((g) =>
-                    g.items.map((item) => (
-                      <li key={item.id} className="flex justify-between">
-                        <span>{item.name}</span>
-                        <span className="text-ff-dim">{Math.round(item.calories)}</span>
-                      </li>
-                    )),
-                  )}
-                </ul>
-              )}
-            </Card>
+            <button
+              key={day}
+              type="button"
+              disabled={future}
+              onClick={() => setDate(day)}
+              className={`flex flex-col items-center rounded-full py-2 text-[11px] disabled:opacity-30 ${
+                selected ? "bg-ff-primary text-[var(--ff-on-primary)]" : "text-ff-dim"
+              }`}
+            >
+              <span>{parts.dow}</span>
+              <span className={`mt-1 text-sm font-semibold ${selected ? "" : "text-ff-text"}`}>{parts.num}</span>
+            </button>
           );
         })}
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <Link
-          href="/log"
-          onClick={() => setMeal(nextMeal)}
-          className="flex min-h-12 items-center justify-center rounded-full bg-ff-muted font-semibold"
-        >
-          Quick add
+      <Card className="px-3 py-4">
+        {target == null ? (
+          <p className="py-10 text-center text-sm text-ff-dim">{t("dash.loading")}</p>
+        ) : (
+          <CalorieRing eaten={calories} target={target} />
+        )}
+      </Card>
+
+      {goal && (
+        <div className="grid grid-cols-3 gap-2">
+          <MacroRing label={t("dash.protein")} actual={protein} target={goal.proteinG} color="var(--ff-pro)" overLabel={t("dash.over")} leftLabel={t("dash.left")} />
+          <MacroRing label={t("dash.carbs")} actual={carbs} target={goal.carbsG} color="var(--ff-carb)" overLabel={t("dash.over")} leftLabel={t("dash.left")} />
+          <MacroRing label={t("dash.fat")} actual={fats} target={goal.fatG} color="var(--ff-fat)" overLabel={t("dash.over")} leftLabel={t("dash.left")} />
+        </div>
+      )}
+
+      {heroTip && (
+        <Link href="/tips" className="block rounded-ff border border-ff-primary/30 bg-ff-surface px-4 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-ff-primary">{tipCategoryLabel(heroTip.category, lang)}</p>
+          <p className="mt-1 text-sm font-medium">{heroTip.title}</p>
         </Link>
-        <Link
-          href="/scan"
-          className="flex min-h-12 items-center justify-center rounded-full bg-ff-primary font-semibold text-slate-950 shadow-glow"
-        >
-          Scan a meal
-        </Link>
-      </div>
+      )}
+
+      {profile && <BmiCard weightKg={profile.currentWeightKg} heightCm={profile.heightCm} compact />}
+
+      <Card>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-semibold">{t("dash.water")}</p>
+            <p className="text-sm tabular-nums text-ff-dim">
+              {Math.round(water)}/{goal?.waterMlTarget ?? 0} ml
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <span
+              aria-hidden
+              className="grid h-10 w-10 place-items-center rounded-full bg-[color-mix(in_srgb,var(--ff-water)_18%,transparent)] text-[var(--ff-water)]"
+            >
+              <Droplets size={18} />
+            </span>
+            <button
+              type="button"
+              aria-label={t("dash.addWater")}
+              onClick={() => addWater(date, 250)}
+              className="grid h-10 w-10 place-items-center rounded-full bg-ff-primary text-[var(--ff-on-primary)]"
+            >
+              <Plus size={18} />
+            </button>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="space-y-3">
+        <p className="font-semibold">{t("dash.meals")}</p>
+        {MEALS.map((meal) => {
+          const group = items?.filter((g) => g.log.mealType === meal) ?? [];
+          const kcal = group.reduce((s, g) => s + g.items.reduce((a, i) => a + i.calories, 0), 0);
+          const names = group.flatMap((g) => g.items.map((item) => item.name));
+          const isNext = meal === nextMeal && date === today && group.length === 0;
+          return (
+            <Link
+              key={meal}
+              href={`/log?meal=${meal}`}
+              onClick={() => setMeal(meal)}
+              className="flex items-center justify-between gap-3 border-t border-ff-border pt-3 first:border-0 first:pt-0"
+            >
+              <div className="min-w-0">
+                <p className="font-medium">
+                  {t(MEAL_KEY[meal])}
+                  {isNext && <span className="ml-2 text-xs font-semibold text-ff-primary">{t("dash.now")}</span>}
+                </p>
+                <p className="truncate text-xs text-ff-dim">
+                  {names.length > 0
+                    ? names.join(", ")
+                    : t("dash.addMeal", { meal: t(MEAL_KEY[meal]).toLocaleLowerCase(intlLocale(lang)) })}
+                </p>
+              </div>
+              <span className="shrink-0 text-sm text-ff-dim">{Math.round(kcal)} kcal</span>
+            </Link>
+          );
+        })}
+      </Card>
     </div>
   );
 }
 
-function Mini({
-  stat,
+function MacroRing({
   label,
-  icon,
+  actual,
+  target,
+  color,
+  overLabel,
+  leftLabel,
 }: {
-  stat: string;
   label: string;
-  icon: ReactNode;
+  actual: number;
+  target: number;
+  color: string;
+  overLabel: string;
+  leftLabel: string;
 }) {
+  const left = Math.round(target - actual);
+  const over = left < 0;
+  const pct = target > 0 ? Math.min(1, actual / target) : 0;
+  const radius = 15;
+  const circumference = 2 * Math.PI * radius;
   return (
-    <div>
-      <div className="mb-1 flex items-center justify-center gap-1">{icon}</div>
-      <p className="font-display text-lg font-semibold">{stat}</p>
-      <p className="text-[11px] uppercase tracking-wide text-ff-dim">{label}</p>
+    <div className="flex min-w-0 flex-col items-center rounded-ff border border-ff-border bg-ff-surface px-1.5 pb-3 pt-2.5 text-center">
+      <svg viewBox="0 0 44 44" className="h-12 w-12 -rotate-90" aria-hidden>
+        <circle cx="22" cy="22" r={radius} stroke={color} strokeOpacity={0.72} strokeWidth="5.5" fill="none" />
+        {pct > 0 && (
+          <circle
+            cx="22"
+            cy="22"
+            r={radius}
+            stroke={color}
+            strokeWidth="5.5"
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={`${circumference * pct} ${circumference}`}
+          />
+        )}
+      </svg>
+      <p className="mt-2 text-lg font-semibold leading-none tabular-nums">{Math.abs(left)}g</p>
+      <p className="mt-1 text-xs font-medium leading-tight">{label}</p>
+      <p className="text-[11px] leading-tight text-ff-dim">{over ? overLabel : leftLabel}</p>
     </div>
   );
+}
+
+function weekContaining(iso: string): string[] {
+  const [y, m, d] = iso.split("-").map(Number);
+  const mondayOffset = (new Date(y, m - 1, d).getDay() + 6) % 7;
+  const start = addDays(iso, -mondayOffset);
+  return Array.from({ length: 7 }, (_, i) => addDays(start, i));
+}
+
+function dayParts(iso: string, lang: "en" | "sv"): { dow: string; num: number } {
+  const [y, m, d] = iso.split("-").map(Number);
+  return {
+    dow: new Date(y, m - 1, d).toLocaleDateString(intlLocale(lang), { weekday: "short" }),
+    num: d,
+  };
+}
+
+function formatDay(iso: string, lang: "en" | "sv"): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(intlLocale(lang), {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
 }

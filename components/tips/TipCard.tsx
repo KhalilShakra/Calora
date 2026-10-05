@@ -2,7 +2,9 @@
 
 import { Card } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { tipCategoryLabel, useT } from "@/lib/i18n";
 import type { Tip } from "@/lib/tips";
+import { useLang } from "@/store/useLang";
 import { useUi } from "@/store/useUi";
 import { Lightbulb, Siren, Sparkles } from "lucide-react";
 import Link from "next/link";
@@ -21,6 +23,8 @@ export function TipCard({
   featured?: boolean;
 }) {
   const setMeal = useUi((s) => s.setMeal);
+  const t = useT();
+  const lang = useLang((s) => s.lang);
   const Icon = ICONS[tip.tone];
   const action = tip.href ? (
     <Link
@@ -28,9 +32,9 @@ export function TipCard({
       onClick={() => {
         if (tip.meal) setMeal(tip.meal);
       }}
-      className="inline-flex min-h-10 items-center justify-center rounded-full bg-ff-primary px-4 text-sm font-semibold text-slate-950"
+      className="inline-flex min-h-10 items-center justify-center rounded-full bg-ff-primary px-4 text-sm font-semibold text-[var(--ff-on-primary)]"
     >
-      {tip.actionLabel ?? "Open"}
+      {tip.actionLabel ?? t("tip.open")}
     </Link>
   ) : null;
 
@@ -54,7 +58,7 @@ export function TipCard({
           )}
         />
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] uppercase tracking-wide text-ff-dim">{tip.category}</p>
+          <p className="text-[11px] uppercase tracking-wide text-ff-dim">{tipCategoryLabel(tip.category, lang)}</p>
           <h3 className="font-display text-lg font-semibold leading-snug">{tip.title}</h3>
           <p className="mt-1 text-sm text-ff-dim">{tip.body}</p>
         </div>
@@ -73,11 +77,12 @@ export function RemainingChips({
   kcalLeft: number;
   waterLeft: number;
 }) {
+  const t = useT();
   return (
     <div className="grid grid-cols-3 gap-2">
-      <Chip label="Calories" value={kcalLeft >= 0 ? `${kcalLeft} left` : `${Math.abs(kcalLeft)} over`} />
-      <Chip label="Protein" value={`${Math.max(0, proteinLeft)}g left`} />
-      <Chip label="Water" value={`${Math.max(0, Math.round(waterLeft / 50) * 50)}ml`} />
+      <Chip label={t("tip.calories")} value={kcalLeft >= 0 ? t("tip.left", { n: kcalLeft }) : t("tip.over", { n: Math.abs(kcalLeft) })} />
+      <Chip label={t("tip.protein")} value={t("tip.gLeft", { n: Math.max(0, proteinLeft) })} />
+      <Chip label={t("tip.water")} value={`${Math.max(0, Math.round(waterLeft / 50) * 50)}ml`} />
     </div>
   );
 }
@@ -92,10 +97,10 @@ function Chip({ label, value }: { label: string; value: string }) {
 }
 
 export function TipsDisclaimer() {
+  const t = useT();
   return (
     <p className="text-[11px] leading-relaxed text-ff-dim">
-      Tips are general coaching, not medical advice. Talk to a clinician before big diet or training
-      changes.
+      {t("tip.disclaimer")}
     </p>
   );
 }

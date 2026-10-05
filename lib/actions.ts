@@ -8,7 +8,7 @@ import {
   qualifyStreak,
   unlockAchievement,
 } from "@/lib/rewards";
-import { computeTdeePlan } from "@/lib/tdee";
+import { computeTdeePlan, weeklyRateKgFor, type MacroFocus, type Pace } from "@/lib/tdee";
 import type {
   ActivityLevel,
   CustomFood,
@@ -26,6 +26,7 @@ import type {
   UnitSystem,
 } from "@/types";
 import { clearOnboardingFinished, markOnboardingFinished, readOnboardingFinished } from "@/lib/onboardingGate";
+import { t } from "@/lib/i18n";
 import { getUserId } from "@/store/useAuth";
 import { scheduleSync } from "@/lib/sync/cloud";
 
@@ -76,11 +77,15 @@ export interface OnboardingInput {
   goalType: GoalType;
   targetWeightKg: number;
   units: UnitSystem;
+  /** Scales the stored weekly rate and the existing calorie adjustment. */
+  pace?: Pace;
+  /** Nudges protein grams on the goal. Carbs take the difference. */
+  macroFocus?: MacroFocus;
 }
 
 export async function completeOnboarding(input: OnboardingInput): Promise<void> {
   if (!(input.heightCm > 0) || !(input.currentWeightKg > 0) || !(input.targetWeightKg > 0)) {
-    throw new Error("Enter height, weight, and target weight.");
+    throw new Error(t("onb.err.body"));
   }
   await seedLocalCatalog();
   const plan = computeTdeePlan({
@@ -90,6 +95,8 @@ export async function completeOnboarding(input: OnboardingInput): Promise<void> 
     dateOfBirth: input.dateOfBirth,
     activityLevel: input.activityLevel,
     goalType: input.goalType,
+    pace: input.pace,
+    macroFocus: input.macroFocus,
   });
   const now = nowIso();
   const userId = getUserId();
@@ -116,7 +123,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<void> 
     userId,
     goalType: input.goalType,
     targetWeightKg: input.targetWeightKg,
-    weeklyRateKg: input.goalType === "lose" ? 0.5 : input.goalType === "gain" ? 0.3 : 0,
+    weeklyRateKg: weeklyRateKgFor(input.goalType, input.pace ?? "steady"),
     bmrKcal: plan.bmr,
     tdeeKcal: plan.tdee,
     calorieTarget: plan.calorieTarget,

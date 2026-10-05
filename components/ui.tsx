@@ -31,7 +31,7 @@ export function Button({
   variant?: "primary" | "ghost" | "danger" | "soft";
 }) {
   const styles = {
-    primary: "bg-ff-primary text-slate-950 hover:brightness-110",
+    primary: "bg-ff-primary text-[var(--ff-on-primary)] hover:brightness-110",
     ghost: "bg-transparent text-ff-text border border-ff-border hover:bg-ff-muted",
     danger: "bg-ff-danger text-white",
     soft: "bg-ff-muted text-ff-text hover:brightness-110",
@@ -94,7 +94,7 @@ export function Segmented<T extends string>({
           onClick={() => onChange(opt.value)}
           className={cn(
             "rounded-full px-2 py-2 text-xs font-semibold",
-            value === opt.value ? "bg-ff-primary text-slate-950" : "text-ff-dim",
+            value === opt.value ? "bg-ff-primary text-[var(--ff-on-primary)]" : "text-ff-dim",
           )}
         >
           {opt.label}

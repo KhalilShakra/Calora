@@ -1,5 +1,10 @@
 import { Logger } from "@/components/logger/Logger";
+import { Suspense } from "react";
 
 export default function LogPage() {
-  return <Logger />;
+  return (
+    <Suspense fallback={null}>
+      <Logger />
+    </Suspense>
+  );
 }

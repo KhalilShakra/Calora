@@ -4,45 +4,53 @@
 
 :root {
   color-scheme: dark;
-  --ff-bg: #0b1220;
-  --ff-bg-elevated: #111827;
-  --ff-surface: #151c2c;
-  --ff-surface-muted: #1c2436;
-  --ff-border: #243044;
-  --ff-text: #f8fafc;
-  --ff-text-muted: #94a3b8;
-  --ff-primary: #10b981;
-  --ff-accent: #22d3ee;
-  --ff-warning: #f59e0b;
-  --ff-danger: #f43f5e;
-  --ff-cal: #f59e0b;
-  --ff-pro: #60a5fa;
-  --ff-carb: #fbbf24;
-  --ff-fat: #f472b6;
-  --ff-water: #38bdf8;
-  --ff-xp: #a3e635;
-  --ff-streak: #fb7185;
+  --ff-canvas: #060c09;
+  --ff-bg: #0c1410;
+  --ff-bg-elevated: #141c16;
+  --ff-surface: #182119;
+  --ff-surface-muted: #243028;
+  --ff-border: #2f3c31;
+  --ff-text: #f4f7f2;
+  --ff-text-muted: #9aa394;
+  --ff-primary: #c6f531;
+  --ff-on-primary: #101410;
+  --ff-accent: #8b7cf6;
+  --ff-warning: #f5b942;
+  --ff-danger: #ff5d73;
+  --ff-cal: #c6f531;
+  --ff-pro: #8eb6ff;
+  --ff-carb: #f0c14a;
+  --ff-fat: #f08bb8;
+  --ff-water: #7ec8ff;
+  --ff-xp: #c6f531;
+  --ff-streak: #ff8fa3;
+  --ff-ring-progress: #c6f531;
+  --ff-ring-track: #7d9a86;
 }
 
 [data-theme="light"] {
   color-scheme: light;
-  --ff-bg: #f4f7f5;
-  --ff-bg-elevated: #ffffff;
-  --ff-surface: #ffffff;
-  --ff-surface-muted: #e8eeea;
-  --ff-border: #d6ded8;
-  --ff-text: #0f172a;
-  --ff-text-muted: #475569;
-  --ff-primary: #059669;
-  --ff-accent: #0891b2;
+  --ff-canvas: #d6e2ca;
+  --ff-bg: #e4ecd8;
+  --ff-bg-elevated: #f3f6ec;
+  --ff-surface: #f8faf4;
+  --ff-surface-muted: #d5e1c4;
+  --ff-border: #cdd8c2;
+  --ff-text: #141614;
+  --ff-text-muted: #6b726a;
+  --ff-primary: #c6f531;
+  --ff-on-primary: #101410;
+  --ff-accent: #5c8f12;
   --ff-warning: #d97706;
   --ff-danger: #e11d48;
+  --ff-ring-progress: #141614;
+  --ff-ring-track: #c5cec0;
 }
 
 html,
 body {
   min-height: 100%;
-  background: #05080f;
+  background: var(--ff-canvas);
 }
 
 body {
@@ -62,7 +70,13 @@ textarea {
 
 .ff-phone {
   background:
-    radial-gradient(1200px 400px at 50% -10%, color-mix(in srgb, var(--ff-primary) 16%, transparent), transparent 55%),
+    radial-gradient(1200px 520px at 50% -16%, color-mix(in srgb, var(--ff-primary) 34%, transparent), transparent 64%),
+    var(--ff-bg);
+}
+
+[data-theme="light"] .ff-phone {
+  background:
+    radial-gradient(1100px 460px at 50% -14%, color-mix(in srgb, var(--ff-primary) 22%, transparent), transparent 68%),
     var(--ff-bg);
 }
 

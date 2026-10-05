@@ -2,6 +2,7 @@
 
 import { Input } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { t } from "@/lib/i18n";
 import { useEffect, useRef, useState, type InputHTMLAttributes } from "react";
 
 /** Allow a cleared field and a single 0. Strip extras like 078 → 78, keep 0.5. */
@@ -23,6 +24,17 @@ export function normalizeNumberDraft(raw: string, allowDecimal: boolean): string
   return `${intPart}.${frac}`;
 }
 
+function outOfRangeMessage(value: number, min: number | null, max: number | null): string | null {
+  const below = min != null && Number.isFinite(min) && value < min;
+  const above = max != null && Number.isFinite(max) && value > max;
+  if (below && above) return t("num.invalid");
+  if (below && max != null && Number.isFinite(max)) return t("num.range", { min: min ?? "", max });
+  if (above && min != null && Number.isFinite(min)) return t("num.range", { min, max: max ?? "" });
+  if (below) return t("num.min", { min: min ?? "" });
+  if (above) return t("num.max", { max: max ?? "" });
+  return null;
+}
+
 export function parseCommittedNumber(raw: string): number | null {
   if (raw === "" || raw === ".") return null;
   const n = Number(raw);
@@ -35,7 +47,7 @@ type NumberFieldProps = Omit<
 > & {
   value: number;
   onValueChange: (value: number) => void;
-  /** False while the field is empty or not a number. Last valid value stays in parent state. */
+  /** False while the field is empty, not a number, or outside min/max. */
   onValidityChange?: (valid: boolean) => void;
   allowDecimal?: boolean;
   error?: string | null;
@@ -91,22 +103,31 @@ export function NumberField({
             onValidityChange?.(false);
             return;
           }
-          setLocalError(null);
+          const minN = rest.min == null || rest.min === "" ? null : Number(rest.min);
+          const maxN = rest.max == null || rest.max === "" ? null : Number(rest.max);
+          const inRange =
+            (minN == null || !Number.isFinite(minN) || parsed >= minN) &&
+            (maxN == null || !Number.isFinite(maxN) || parsed <= maxN);
+          const rangeError = inRange ? null : outOfRangeMessage(parsed, minN, maxN);
+          setLocalError(rangeError);
           committed.current = parsed;
-          onValidityChange?.(true);
+          onValidityChange?.(inRange);
           onValueChange(parsed);
         }}
         onBlur={(e) => {
           setFocused(false);
           const parsed = parseCommittedNumber(text);
           if (parsed === null) {
-            setLocalError("Enter a number");
+            setLocalError(t("num.enter"));
             onValidityChange?.(false);
           } else {
+            const minN = rest.min == null || rest.min === "" ? null : Number(rest.min);
+            const maxN = rest.max == null || rest.max === "" ? null : Number(rest.max);
+            const rangeError = outOfRangeMessage(parsed, minN, maxN);
             committed.current = parsed;
             setText(String(parsed));
-            setLocalError(null);
-            onValidityChange?.(true);
+            setLocalError(rangeError);
+            onValidityChange?.(rangeError == null);
             onValueChange(parsed);
           }
           onBlur?.(e);

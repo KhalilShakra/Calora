@@ -7,7 +7,7 @@
  */
 const config = {
   appId: "com.forgefuel.app",
-  appName: "ForgeFuel",
+  appName: "Calora",
   webDir: "out",
   server: {
     androidScheme: "https",

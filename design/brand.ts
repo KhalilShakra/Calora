@@ -1,11 +1,11 @@
 /**
- * ForgeFuel — Brand tokens
+ * Calora — Brand tokens
  * Dark-first health + habit-loop gamification.
  * Map these 1:1 to Tailwind theme.extend and CSS variables.
  */
 
-export const APP_NAME = "ForgeFuel";
-export const APP_TAGLINE = "Earn your fuel. Level your life.";
+export const APP_NAME = "Calora";
+export const APP_TAGLINE = "Track food. Feel better.";
 
 export const brandAlternatives = [
   { name: "NutriQuest", tagline: "Every meal is a quest." },
@@ -15,37 +15,39 @@ export const brandAlternatives = [
 ] as const;
 
 export const dark = {
-  bg: "#0B1220",
-  bgElevated: "#111827",
-  surface: "#151C2C",
-  surfaceMuted: "#1C2436",
-  border: "#243044",
-  text: "#F8FAFC",
-  textMuted: "#94A3B8",
-  primary: "#10B981",
-  primaryHover: "#34D399",
-  primaryPressed: "#059669",
-  accent: "#22D3EE",
-  warning: "#F59E0B",
-  danger: "#F43F5E",
-  success: "#34D399",
+  canvas: "#060C09",
+  bg: "#0C1410",
+  bgElevated: "#141C16",
+  surface: "#182119",
+  surfaceMuted: "#243028",
+  border: "#2F3C31",
+  text: "#F4F7F2",
+  textMuted: "#9AA394",
+  primary: "#C6F531",
+  primaryHover: "#D4FA62",
+  primaryPressed: "#A8D61A",
+  accent: "#8B7CF6",
+  warning: "#F5B942",
+  danger: "#FF5D73",
+  success: "#C6F531",
 } as const;
 
 export const light = {
-  bg: "#F4F7F5",
-  bgElevated: "#FFFFFF",
-  surface: "#FFFFFF",
-  surfaceMuted: "#E8EEEA",
-  border: "#D6DED8",
-  text: "#0F172A",
-  textMuted: "#475569",
-  primary: "#059669",
-  primaryHover: "#10B981",
-  primaryPressed: "#047857",
-  accent: "#0891B2",
+  canvas: "#D6E2CA",
+  bg: "#E4ECD8",
+  bgElevated: "#F3F6EC",
+  surface: "#F8FAF4",
+  surfaceMuted: "#D5E1C4",
+  border: "#CDD8C2",
+  text: "#141614",
+  textMuted: "#6B726A",
+  primary: "#C6F531",
+  primaryHover: "#D4FA62",
+  primaryPressed: "#A8D61A",
+  accent: "#5C8F12",
   warning: "#D97706",
   danger: "#E11D48",
-  success: "#059669",
+  success: "#C6F531",
 } as const;
 
 /** Macro / tracker semantic colors — same hue family in both themes. */
@@ -77,6 +79,7 @@ export const radius = {
 export const cssVariables = `
 :root {
   color-scheme: dark;
+  --ff-canvas: ${dark.canvas};
   --ff-bg: ${dark.bg};
   --ff-bg-elevated: ${dark.bgElevated};
   --ff-surface: ${dark.surface};
@@ -85,6 +88,7 @@ export const cssVariables = `
   --ff-text: ${dark.text};
   --ff-text-muted: ${dark.textMuted};
   --ff-primary: ${dark.primary};
+  --ff-on-primary: #101410;
   --ff-accent: ${dark.accent};
   --ff-warning: ${dark.warning};
   --ff-danger: ${dark.danger};
@@ -99,6 +103,7 @@ export const cssVariables = `
 
 [data-theme="light"] {
   color-scheme: light;
+  --ff-canvas: ${light.canvas};
   --ff-bg: ${light.bg};
   --ff-bg-elevated: ${light.bgElevated};
   --ff-surface: ${light.surface};
@@ -107,6 +112,7 @@ export const cssVariables = `
   --ff-text: ${light.text};
   --ff-text-muted: ${light.textMuted};
   --ff-primary: ${light.primary};
+  --ff-on-primary: #101410;
   --ff-accent: ${light.accent};
   --ff-warning: ${light.warning};
   --ff-danger: ${light.danger};
