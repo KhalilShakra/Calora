@@ -80,6 +80,20 @@ textarea {
     var(--ff-bg);
 }
 
+.ff-site {
+  background:
+    radial-gradient(920px 520px at 12% -8%, color-mix(in srgb, var(--ff-primary) 30%, transparent), transparent 62%),
+    radial-gradient(680px 420px at 100% 0%, color-mix(in srgb, var(--ff-accent) 16%, transparent), transparent 58%),
+    var(--ff-canvas);
+}
+
+[data-theme="light"] .ff-site {
+  background:
+    radial-gradient(920px 520px at 12% -8%, color-mix(in srgb, var(--ff-primary) 34%, transparent), transparent 64%),
+    radial-gradient(680px 420px at 100% 0%, color-mix(in srgb, var(--ff-accent) 12%, transparent), transparent 60%),
+    var(--ff-bg);
+}
+
 .ff-ring {
   background: conic-gradient(var(--ring-color) calc(var(--ring-pct) * 1%), var(--ff-surface-muted) 0);
 }

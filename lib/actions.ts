@@ -317,6 +317,30 @@ export async function addWater(localDate: string, amountMl: number): Promise<voi
   scheduleSync();
 }
 
+export async function removeWater(localDate: string, amountMl: number): Promise<void> {
+  if (!(amountMl > 0)) return;
+  const logs = await db.waterLogs
+    .where("[userId+localDate]")
+    .equals([getUserId(), localDate])
+    .toArray();
+  logs.sort((a, b) => (a.loggedAt < b.loggedAt ? 1 : -1));
+  let left = amountMl;
+  await db.transaction("rw", db.waterLogs, async () => {
+    for (const log of logs) {
+      if (left <= 0) break;
+      if (log.amountMl <= left) {
+        left -= log.amountMl;
+        await db.waterLogs.delete(log.id);
+      } else {
+        await db.waterLogs.update(log.id, { amountMl: log.amountMl - left });
+        left = 0;
+      }
+    }
+  });
+  await recomputeDay(localDate);
+  scheduleSync();
+}
+
 export async function addWeighIn(localDate: string, weightKg: number): Promise<void> {
   if (!(Number.isFinite(weightKg) && weightKg > 0)) return;
   const userId = getUserId();

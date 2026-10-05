@@ -57,7 +57,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         }
 
         if (!returning) {
-          if (path !== "/onboarding") router.replace("/onboarding");
+          if (path !== "/onboarding" && !isAuthPath(path)) router.replace("/welcome");
           return;
         }
 

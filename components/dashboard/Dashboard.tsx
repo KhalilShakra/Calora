@@ -3,7 +3,7 @@
 import { BmiCard } from "@/components/bmi/BmiCard";
 import { APP_NAME } from "@/design/brand";
 import { useActiveGoal } from "@/hooks/useActiveGoal";
-import { addWater } from "@/lib/actions";
+import { addWater, removeWater } from "@/lib/actions";
 import { db } from "@/lib/db";
 import { addDays, todayKey } from "@/lib/dates";
 import { greetingKey, intlLocale, MEAL_KEY, tipCategoryLabel, useT } from "@/lib/i18n";
@@ -16,7 +16,7 @@ import { useUi } from "@/store/useUi";
 import { useUserId } from "@/store/useAuth";
 import { MEALS, type MealType } from "@/types";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Droplets, Plus } from "lucide-react";
+import { Droplets, Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
 
@@ -169,6 +169,15 @@ export function Dashboard() {
             >
               <Droplets size={18} />
             </span>
+            <button
+              type="button"
+              aria-label={t("dash.removeWater")}
+              disabled={water <= 0}
+              onClick={() => removeWater(date, 250)}
+              className="grid h-10 w-10 place-items-center rounded-full bg-ff-muted text-ff-text disabled:opacity-30"
+            >
+              <Minus size={18} />
+            </button>
             <button
               type="button"
               aria-label={t("dash.addWater")}

@@ -1,5 +1,5 @@
-import { AppShell } from "@/components/AppShell";
 import { LangSync } from "@/components/LangSync";
+import { RootFrame } from "@/components/RootFrame";
 import { RegisterSW } from "@/components/RegisterSW";
 import { ThemeSync } from "@/components/ThemeSync";
 import { APP_NAME, APP_TAGLINE } from "@/design/brand";
@@ -43,9 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <RegisterSW />
         <ThemeSync />
         <LangSync />
-        <div className="ff-phone mx-auto min-h-dvh w-full max-w-md shadow-[0_0_80px_rgba(0,0,0,0.45)]">
-          <AppShell>{children}</AppShell>
-        </div>
+        <RootFrame>{children}</RootFrame>
       </body>
     </html>
   );
